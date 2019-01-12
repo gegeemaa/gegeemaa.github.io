@@ -1,0 +1,33 @@
+# Install docker on snap
+snap install docker
+
+# Get docker image of jekyll
+docker pull jekyll/jekyll
+
+# Generate new blog on in dir myblog ported to docker container
+export JEKYLL_VERSION=latest
+docker run --rm --volume="$PWD:/srv/jekyll" -it jekyll/jekyll:$JEKYLL_VERSION jekyll new myblog
+
+# Build the site installing gems etc.
+cd myblog
+docker run --rm --volume="$PWD:/srv/jekyll" -it jekyll/jekyll:$JEKYLL_VERSION jekyll build
+
+# Serve the blog (--name here is optional, if missed, random crazy name will be given)
+docker run --volume="$PWD:/srv/jekyll" -it jekyll/jekyll:$JEKYLL_VERSION jekyll serve --watch --drafts
+
+# Executing command in container
+docker exec -ti myblog-container /bin/sh
+# Install jekyll theme in container
+docker exec -ti myblog-container gem install "jekyll-theme-hydeout"
+
+# Manage container state by its name
+docker start myblog-container 
+docker restart myblog-container
+docker stop myblog-container
+
+# Remove container
+docker rm -f myblog-containerdo
+
+
+# Delete all historical containers
+for d in `docker ps -aq`; do docker rm $d ; done
